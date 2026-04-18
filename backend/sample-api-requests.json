@@ -1,0 +1,51 @@
+{
+  "registerCitizen": {
+    "method": "POST",
+    "url": "http://localhost:8080/api/auth/register",
+    "body": {
+      "name": "Asha Verma",
+      "email": "asha.verma@example.com",
+      "password": "password123",
+      "role": "CITIZEN",
+      "contactNumber": "9876543210",
+      "address": "12 MG Road, Ward 8, Bengaluru"
+    }
+  },
+  "registerOfficer": {
+    "method": "POST",
+    "url": "http://localhost:8080/api/auth/register",
+    "body": {
+      "name": "Ravi Kumar",
+      "email": "ravi.kumar@example.com",
+      "password": "password123",
+      "role": "OFFICER",
+      "contactNumber": "9988776655",
+      "address": "Municipal Office, Zone 2"
+    }
+  },
+  "login": {
+    "method": "POST",
+    "url": "http://localhost:8080/api/auth/login",
+    "body": {
+      "email": "asha.verma@example.com",
+      "password": "password123"
+    }
+  },
+  "createComplaint": {
+    "method": "POST",
+    "url": "http://localhost:8080/api/complaints",
+    "body": {
+      "title": "Garbage Not Collected",
+      "description": "Garbage has not been collected for the last 3 days in our street.",
+      "priority": "HIGH",
+      "citizenId": 1,
+      "assignedOfficerId": 2,
+      "latitude": 12.9716,
+      "longitude": 77.5946
+    }
+  },
+  "getAllComplaints": {
+    "method": "GET",
+    "url": "http://localhost:8080/api/complaints"
+  }
+}
