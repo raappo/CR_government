@@ -45,17 +45,23 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', loadComponent: () => import('./admin/dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent) },
       { path: 'all-complaints', loadComponent: () => import('./admin/all-complaints/all-complaints.component').then(m => m.AdminAllComplaintsComponent) },
-      // Phase 3 routes added below
       { path: 'officers', loadComponent: () => import('./admin/officers/officers.component').then(m => m.OfficersComponent) },
       { path: 'citizens', loadComponent: () => import('./admin/citizens/citizens.component').then(m => m.CitizensComponent) },
       { path: 'departments', loadComponent: () => import('./admin/departments/departments.component').then(m => m.DepartmentsComponent) },
+      { path: 'analytics', loadComponent: () => import('./admin/analytics/analytics.component').then(m => m.AnalyticsComponent) },
+      { path: 'audit-logs', loadComponent: () => import('./admin/audit-logs/audit-logs.component').then(m => m.AuditLogsComponent) },
     ],
   },
-  // ─── Shared profile (all roles) ─────────────────────────────────────────────
+  // ─── Shared (all roles) ─────────────────────────────────────────────────────
   {
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () => import('./shared/components/profile/profile.component').then(m => m.ProfileComponent),
+  },
+  {
+    path: 'notifications',
+    canActivate: [authGuard],
+    loadComponent: () => import('./shared/notifications/notifications.component').then(m => m.NotificationsComponent),
   },
   { path: '**', redirectTo: '' },
 ];

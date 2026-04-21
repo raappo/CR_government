@@ -1,7 +1,8 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-navbar',
@@ -65,6 +66,17 @@ import { AuthService } from '../../../core/services/auth.service';
                   <small>{{ auth.currentUser()?.email }}</small>
                 </div>
                 <div class="dropdown-divider"></div>
+                
+                <a routerLink="/notifications" class="dropdown-item" (click)="userMenuOpen = false">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  Notifications
+                  <span *ngIf="unreadNotifications > 0" style="margin-left:auto; background:var(--danger); color:white; font-size:0.65rem; font-weight:800; padding:1px 7px; border-radius:20px;">
+                    {{ unreadNotifications }}
+                  </span>
+                </a>
+
                 <a routerLink="/profile" class="dropdown-item" (click)="userMenuOpen = false">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   My Profile
@@ -362,12 +374,29 @@ import { AuthService } from '../../../core/services/auth.service';
     }
   `]
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   isScrolled = false;
   menuOpen = false;
   userMenuOpen = false;
+  unreadNotifications = 0;
 
-  constructor(public auth: AuthService) { }
+  constructor(
+    public auth: AuthService,
+    private notifService: NotificationService
+  ) { }
+
+  ngOnInit(): void {
+    if (this.auth.isLoggedIn()) {
+      this.loadUnreadCount();
+    }
+  }
+
+  loadUnreadCount(): void {
+    this.notifService.getUnreadCount().subscribe({
+      next: (res) => this.unreadNotifications = res.count,
+      error: () => { } // silent
+    });
+  }
 
   @HostListener('window:scroll')
   onScroll() {

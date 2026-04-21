@@ -1,19 +1,24 @@
 package com.civic.grievance.controller;
 
 import com.civic.grievance.dto.*;
+import com.civic.grievance.dto.AuditLogResponse;
 import com.civic.grievance.entity.enums.Status;
 import com.civic.grievance.repository.ComplaintRepository;
 import com.civic.grievance.repository.UserRepository;
 import com.civic.grievance.entity.enums.Role;
+import com.civic.grievance.service.AuditLogService;
 import com.civic.grievance.service.ComplaintService;
 import com.civic.grievance.service.DepartmentService;
 import com.civic.grievance.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 @RestController
@@ -25,6 +30,7 @@ public class AdminController {
     private final UserService userService;
     private final DepartmentService departmentService;
     private final ComplaintRepository complaintRepository;
+    private final AuditLogService auditLogService;
     private final UserRepository userRepository;
 
     // ─── Complaints ───────────────────────────────────────────────────────────
@@ -103,5 +109,41 @@ public class AdminController {
                 .totalOfficers(userRepository.findByRole(Role.OFFICER).size())
                 .build();
         return ResponseEntity.ok(stats);
+    }
+
+    // ─── Audit Logs ───────────────────────────────────────────────────────────
+
+    @GetMapping("/audit-logs")
+    public ResponseEntity<List<AuditLogResponse>> getAuditLogs(
+            @RequestParam(defaultValue = "100") int limit) {
+        return ResponseEntity.ok(auditLogService.getRecent(limit));
+    }
+
+    // ─── CSV Export ───────────────────────────────────────────────────────────
+
+    @GetMapping("/reports/export-csv")
+    public void exportComplaintsCsv(HttpServletResponse response) throws IOException {
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=\"complaints.csv\"");
+
+        List<com.civic.grievance.dto.ComplaintResponse> complaints =
+            complaintService.getAllComplaints();
+
+        try (PrintWriter writer = response.getWriter()) {
+            writer.println("ID,Title,Status,Priority,Category,Citizen,Officer,Created,SLA Deadline");
+            for (var c : complaints) {
+                writer.printf("%d,\"%s\",%s,%s,%s,\"%s\",\"%s\",%s,%s%n",
+                    c.getId(),
+                    c.getTitle().replace("\"", "\"\""),
+                    c.getStatus(),
+                    c.getPriority(),
+                    c.getCategory() != null ? c.getCategory() : "",
+                    c.getCitizenName(),
+                    c.getAssignedOfficerName() != null ? c.getAssignedOfficerName() : "Unassigned",
+                    c.getCreatedAt(),
+                    c.getSlaDeadline()
+                );
+            }
+        }
     }
 }

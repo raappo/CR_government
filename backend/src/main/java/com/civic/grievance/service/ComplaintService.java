@@ -30,6 +30,8 @@ public class ComplaintService {
     private final DepartmentRepository departmentRepository;
     private final SlaConfigRepository slaConfigRepository;
     private final NotificationService notificationService;
+    private final EmailService emailService;
+    private final AuditLogService auditLogService;
 
     public ComplaintResponse createComplaint(ComplaintRequest request) {
         User citizen = userRepository.findById(request.getCitizenId())
@@ -88,6 +90,14 @@ public class ComplaintService {
         notificationService.notifyUser(citizen, "Complaint Submitted",
                 "Your complaint '" + saved.getTitle() + "' (ID: GRV-" + saved.getId() + ") has been received.", saved.getId());
 
+        // Email citizen
+        emailService.sendComplaintSubmitted(
+            citizen.getEmail(), citizen.getName(), saved.getId(), saved.getTitle());
+        // Audit
+        auditLogService.log("COMPLAINT_CREATED",
+            "Citizen " + citizen.getName() + " raised complaint: " + saved.getTitle(),
+            citizen.getId(), citizen.getName(), saved.getId(), "COMPLAINT");
+
         return mapToResponse(saved);
     }
 
@@ -123,6 +133,12 @@ public class ComplaintService {
         notificationService.notifyUser(saved.getCitizen(), "Officer Assigned",
                 "An officer has been assigned to your complaint '" + saved.getTitle() + "'.", saved.getId());
 
+        emailService.sendOfficerAssigned(
+            officer.getEmail(), officer.getName(), saved.getId(), saved.getTitle());
+        auditLogService.log("OFFICER_ASSIGNED",
+            "Officer " + officer.getName() + " assigned to GRV-" + saved.getId(),
+            officer.getId(), officer.getName(), saved.getId(), "COMPLAINT");
+
         return mapToResponse(saved);
     }
 
@@ -146,6 +162,15 @@ public class ComplaintService {
         // Notify citizen of status change
         notificationService.notifyUser(saved.getCitizen(), "Complaint Status Updated",
                 "Your complaint '" + saved.getTitle() + "' status is now: " + request.getStatus(), saved.getId());
+
+        emailService.sendStatusUpdate(
+            saved.getCitizen().getEmail(), saved.getCitizen().getName(),
+            saved.getId(), saved.getTitle(), request.getStatus().name());
+        auditLogService.log("STATUS_CHANGED",
+            "Complaint GRV-" + saved.getId() + " status → " + request.getStatus(),
+            requestingOfficerId != null ? requestingOfficerId : 0L,
+            requestingOfficerId != null ? "Officer" : "Admin",
+            saved.getId(), "COMPLAINT");
 
         return mapToResponse(saved);
     }
