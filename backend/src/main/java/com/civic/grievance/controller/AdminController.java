@@ -36,7 +36,11 @@ public class AdminController {
     // ─── Complaints ───────────────────────────────────────────────────────────
 
     @GetMapping("/complaints")
-    public ResponseEntity<List<ComplaintResponse>> getAllComplaints() {
+    public ResponseEntity<List<ComplaintResponse>> getAllComplaints(
+            @RequestParam(required = false) Status status) {
+        if (status != null) {
+            return ResponseEntity.ok(complaintService.getComplaintsByStatus(status));
+        }
         return ResponseEntity.ok(complaintService.getAllComplaints());
     }
 

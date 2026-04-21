@@ -22,7 +22,6 @@ public class ComplaintRequest {
 
     private Category category;
 
-    @NotNull(message = "Citizen ID is required")
     private Long citizenId;
 
     private Long assignedOfficerId;

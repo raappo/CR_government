@@ -39,7 +39,7 @@ public class User {
 
     // false for OFFICER accounts until admin approves; true for all others
     @Builder.Default
-    @Column(name = "approved", columnDefinition = "TINYINT(1) NOT NULL DEFAULT 1")
+    @Column(name = "approved", nullable = false)
     private boolean approved = true;
 
     @Column(nullable = false, updatable = false)

@@ -41,6 +41,15 @@ public class CitizenController {
         return ResponseEntity.ok(complaintService.getComplaintsByCitizen(citizen.getId()));
     }
 
+    @DeleteMapping("/complaints/{id}")
+    public ResponseEntity<ApiResponse> deleteDraftComplaint(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        User citizen = resolveUser(userDetails);
+        complaintService.deleteDraftComplaintByCitizen(id, citizen.getId());
+        return ResponseEntity.ok(ApiResponse.builder().message("Draft complaint deleted").build());
+    }
+
     @PostMapping("/feedback")
     public ResponseEntity<FeedbackResponse> submitFeedback(
             @Valid @RequestBody FeedbackRequest request,

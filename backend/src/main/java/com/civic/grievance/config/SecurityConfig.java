@@ -14,8 +14,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -37,6 +39,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedEntryPoint()))
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
@@ -46,12 +49,14 @@ public class SecurityConfig {
                 .requestMatchers("/api/officer/**").hasAnyRole("OFFICER", "SUPERVISOR", "ADMIN")
                 // Citizen + Admin
                 .requestMatchers("/api/citizen/**").hasAnyRole("CITIZEN", "ADMIN")
+                // Public read endpoints
+                .requestMatchers(HttpMethod.GET, "/api/departments/**").permitAll()
                 // All authenticated users
-                .requestMatchers("/api/departments/**").authenticated()
                 .requestMatchers("/api/notifications/**").authenticated()
+                .requestMatchers("/api/users/**").authenticated()
                 // Legacy complaint endpoints — keep for backward compat (Phase 2 migrates these)
-                .requestMatchers("GET", "/api/complaints").hasAnyRole("ADMIN", "SUPERVISOR")
-                .requestMatchers("POST", "/api/complaints").hasAnyRole("CITIZEN", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/complaints").hasAnyRole("ADMIN", "SUPERVISOR")
+                .requestMatchers(HttpMethod.POST, "/api/complaints").hasAnyRole("CITIZEN", "ADMIN")
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
@@ -76,6 +81,11 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint unauthorizedEntryPoint() {
+        return (request, response, authException) -> response.sendError(401, "Unauthorized");
     }
 
     @Bean

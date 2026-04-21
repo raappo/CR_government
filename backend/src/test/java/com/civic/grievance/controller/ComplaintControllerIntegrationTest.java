@@ -129,6 +129,19 @@ class ComplaintControllerIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$[0].citizenId").value(citizenUser.getId()));
     }
 
+    @Test
+    @DisplayName("TC-22: Citizen deletes own draft complaint")
+    void citizenDeletesOwnDraftComplaint() throws Exception {
+        Complaint c = createComplaintInDB(Status.PENDING);
+
+        mockMvc.perform(delete("/api/citizen/complaints/" + c.getId())
+                .header("Authorization", bearer(citizenToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Draft complaint deleted"));
+
+        assertThat(complaintRepository.findById(c.getId())).isEmpty();
+    }
+
     // ─── Test Case 14: Search complaint by ID (admin) ────────────────────────
 
     @Test
@@ -156,6 +169,19 @@ class ComplaintControllerIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.pending").isNumber())
                 .andExpect(jsonPath("$.resolved").isNumber());
+    }
+
+    @Test
+    @DisplayName("TC-15b: Admin filters complaints by status via query param")
+    void adminFilterByStatus_queryParam() throws Exception {
+        createComplaintInDB(Status.PENDING);
+        createComplaintInDB(Status.RESOLVED);
+
+        mockMvc.perform(get("/api/admin/complaints?status=PENDING")
+                .header("Authorization", bearer(adminToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].status").value("PENDING"));
     }
 
     // ─── Test Case 24: Geo-location stored ───────────────────────────────────

@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,6 +31,7 @@ public abstract class IntegrationTestBase {
     @Autowired protected PasswordEncoder passwordEncoder;
     @Autowired protected JwtUtil jwtUtil;
     @Autowired protected UserDetailsService userDetailsService;
+    @Autowired protected JdbcTemplate jdbcTemplate;
 
     protected String adminToken;
     protected String citizenToken;
@@ -40,7 +42,14 @@ public abstract class IntegrationTestBase {
 
     @BeforeEach
     void setUpUsers() {
-        userRepository.deleteAll();
+        // Clear test data in FK-safe order for H2 integration tests.
+        jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY FALSE");
+        jdbcTemplate.execute("TRUNCATE TABLE notifications");
+        jdbcTemplate.execute("TRUNCATE TABLE feedback");
+        jdbcTemplate.execute("TRUNCATE TABLE complaint_media");
+        jdbcTemplate.execute("TRUNCATE TABLE complaints");
+        jdbcTemplate.execute("TRUNCATE TABLE users");
+        jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY TRUE");
 
         adminUser   = createUser("admin@test.com",   "Admin",   "admin123",   Role.ADMIN,   true);
         citizenUser = createUser("citizen@test.com", "Citizen", "citizen123", Role.CITIZEN, true);

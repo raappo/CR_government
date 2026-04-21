@@ -103,6 +103,10 @@ public class ComplaintService {
         return complaintRepository.findAll().stream().map(this::mapToResponse).toList();
     }
 
+    public List<ComplaintResponse> getComplaintsByStatus(Status status) {
+        return complaintRepository.findByStatus(status).stream().map(this::mapToResponse).toList();
+    }
+
     public List<ComplaintResponse> getComplaintsByCitizen(Long citizenId) {
         return complaintRepository.findByCitizen_Id(citizenId).stream().map(this::mapToResponse).toList();
     }
@@ -173,6 +177,23 @@ public class ComplaintService {
 
     public ComplaintResponse updateStatusByAdmin(Long complaintId, UpdateStatusRequest request) {
         return updateStatus(complaintId, request, null);
+    }
+
+    public void deleteDraftComplaintByCitizen(Long complaintId, Long citizenId) {
+        Complaint complaint = findById(complaintId);
+
+        if (!complaint.getCitizen().getId().equals(citizenId)) {
+            throw new BadRequestException("You can only delete your own complaints");
+        }
+
+        if (complaint.getStatus() != Status.PENDING || complaint.getAssignedOfficer() != null) {
+            throw new BadRequestException("Only unassigned PENDING complaints can be deleted");
+        }
+
+        complaintRepository.delete(complaint);
+        auditLogService.log("COMPLAINT_DELETED",
+                "Citizen deleted draft complaint GRV-" + complaint.getId(),
+                citizenId, complaint.getCitizen().getName(), complaint.getId(), "COMPLAINT");
     }
 
     private Complaint findById(Long id) {

@@ -46,7 +46,6 @@ class ComplaintServiceTest {
     void createComplaint_withGeoTags() {
         User citizen = buildUser(1L, Role.CITIZEN, "citizen@test.com", true);
         when(userRepository.findById(1L)).thenReturn(Optional.of(citizen));
-        when(slaConfigRepository.findByCategoryAndPriority(any(), any())).thenReturn(Optional.empty());
         when(complaintRepository.save(any(Complaint.class))).thenAnswer(inv -> {
             Complaint c = inv.getArgument(0);
             c = Complaint.builder().id(10L).title(c.getTitle()).description(c.getDescription())
@@ -80,7 +79,6 @@ class ComplaintServiceTest {
     void createComplaint_slaDeadlineAutoCalculated() {
         User citizen = buildUser(1L, Role.CITIZEN, "c@test.com", true);
         when(userRepository.findById(1L)).thenReturn(Optional.of(citizen));
-        when(slaConfigRepository.findByCategoryAndPriority(any(), any())).thenReturn(Optional.empty());
         doNothing().when(notificationService).notifyUser(any(), any(), any(), any());
         doNothing().when(emailService).sendComplaintSubmitted(any(), any(), anyLong(), any());
         doNothing().when(auditLogService).log(any(), any(), any(), any(), any(), any());

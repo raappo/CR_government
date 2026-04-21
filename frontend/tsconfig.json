@@ -1,5 +1,14 @@
 {
   "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
     "outDir": "./dist/out-tsc",
