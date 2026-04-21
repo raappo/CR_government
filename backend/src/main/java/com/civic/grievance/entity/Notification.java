@@ -29,7 +29,7 @@ public class Notification {
     private String message;
 
     @Builder.Default
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     private boolean read = false;
 
     @Column
