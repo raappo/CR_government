@@ -8,6 +8,7 @@ import com.civic.grievance.repository.UserRepository;
 import com.civic.grievance.service.ComplaintService;
 import com.civic.grievance.service.DepartmentService;
 import com.civic.grievance.service.UserService;
+import com.civic.grievance.service.AuditLogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,7 @@ public class SupervisorController {
     private final UserService userService;
     private final DepartmentService departmentService;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     /** All complaints in the supervisor's department */
     @GetMapping("/department/complaints")
@@ -155,6 +157,16 @@ public class SupervisorController {
                 );
             }
         }
+    }
+
+    /** Department-scoped audit log — returns recent audit events filtered to this department */
+    @GetMapping("/department/audit-logs")
+    public ResponseEntity<List<AuditLogResponse>> getDepartmentAuditLogs(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "100") int limit) {
+        User supervisor = resolveUser(userDetails);
+        Long deptId = getDepartmentId(supervisor);
+        return ResponseEntity.ok(auditLogService.getByDepartment(deptId, limit));
     }
 
     private User resolveUser(UserDetails userDetails) {

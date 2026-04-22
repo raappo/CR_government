@@ -57,7 +57,7 @@
 // ── Reset ─────────────────────────────────────────────────────
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { font-size: 14px; scroll-behavior: smooth; }
+html { font-size: 15px; scroll-behavior: smooth; }
 
 body {
   font-family: var(--font);
@@ -73,10 +73,10 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.3;
 }
 
-h1 { font-size: 1.5rem; }
-h2 { font-size: 1.25rem; }
-h3 { font-size: 1.05rem; }
-h4 { font-size: 0.95rem; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.3rem; }
+h3 { font-size: 1.1rem; }
+h4 { font-size: 1rem; }
 
 a { text-decoration: none; color: inherit; }
 button { font-family: var(--font); cursor: pointer; }
@@ -973,8 +973,67 @@ body { overflow-y: auto; }
   &:hover { color: #ef4444 !important; background: rgba(239,68,68,0.1) !important; }
 }
 
-// Page header bar (assigned-complaints standalone)
-.page-header { border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 20px; }
+// Shared page header bar
+.page-header {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0 18px;
+  margin-bottom: 24px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  // For pages using .container inside .page-header (Citizen)
+  .container {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-header-left {
+    flex: 1;
+    text-align: left;
+  }
+
+  .page-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-500);
+    margin-bottom: 8px;
+    a {
+      color: var(--primary);
+      font-weight: 500;
+      &:hover { text-decoration: underline; }
+    }
+    span { color: var(--text-400); }
+  }
+
+  h1, h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-900);
+    margin: 0 0 4px 0;
+  }
+
+  p {
+    font-size: 0.88rem;
+    color: var(--text-500);
+    margin: 0;
+  }
+}
 
 // ── Responsive container ───────────────────────────────────────
 @media (max-width: 768px) {

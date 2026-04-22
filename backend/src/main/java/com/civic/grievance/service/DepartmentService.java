@@ -35,7 +35,12 @@ public class DepartmentService {
                 .description(request.getDescription())
                 .contactEmail(request.getContactEmail())
                 .build();
-        return mapToResponse(departmentRepository.save(dept));
+        dept = departmentRepository.save(dept);
+        // Optionally assign supervisor in same request
+        if (request.getSupervisorId() != null) {
+            return assignHead(dept.getId(), request.getSupervisorId());
+        }
+        return mapToResponse(dept);
     }
 
     public List<DepartmentResponse> getAll() {
@@ -53,7 +58,12 @@ public class DepartmentService {
         dept.setName(request.getName());
         dept.setDescription(request.getDescription());
         if (request.getContactEmail() != null) dept.setContactEmail(request.getContactEmail());
-        return mapToResponse(departmentRepository.save(dept));
+        dept = departmentRepository.save(dept);
+        // Reassign supervisor if provided
+        if (request.getSupervisorId() != null) {
+            return assignHead(dept.getId(), request.getSupervisorId());
+        }
+        return mapToResponse(dept);
     }
 
     public DepartmentResponse assignHead(Long deptId, Long userId) {

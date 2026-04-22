@@ -1,5 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -28,8 +28,8 @@ import { NotificationService } from '../../../core/services/notification.service
 
         <ul class="nav-links" [class.open]="menuOpen">
           <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Home</a></li>
-          <li><a href="#about" (click)="closeMenu()">About</a></li>
-          <li><a href="#features" (click)="closeMenu()">Services</a></li>
+          <li><a href="javascript:void(0)" (click)="scrollToSection('about')">About</a></li>
+          <li><a href="javascript:void(0)" (click)="scrollToSection('features')">Services</a></li>
           <ng-container *ngIf="auth.isLoggedIn()">
             <ng-container *ngIf="auth.getRole() === 'CITIZEN'">
               <li><a routerLink="/citizen/dashboard" routerLinkActive="active">Dashboard</a></li>
@@ -386,7 +386,8 @@ export class NavbarComponent implements OnInit {
 
   constructor(
     public auth: AuthService,
-    private notifService: NotificationService
+    private notifService: NotificationService,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -410,6 +411,19 @@ export class NavbarComponent implements OnInit {
   toggleMenu() { this.menuOpen = !this.menuOpen; }
   closeMenu() { this.menuOpen = false; }
   toggleUserMenu() { this.userMenuOpen = !this.userMenuOpen; }
+
+  scrollToSection(id: string): void {
+    this.closeMenu();
+    const tryScroll = () => {
+      const el = document.getElementById(id);
+      if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    };
+    if (this.router.url === '/' || this.router.url === '') {
+      tryScroll();
+    } else {
+      this.router.navigate(['/'], { fragment: id }).then(() => setTimeout(tryScroll, 120));
+    }
+  }
 
   getInitials(): string {
     const name = this.auth.currentUser()?.name ?? '';

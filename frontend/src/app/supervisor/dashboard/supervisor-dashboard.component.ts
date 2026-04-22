@@ -8,7 +8,7 @@ import { ComplaintService, ComplaintResponse } from '../../core/services/complai
 import { environment } from '../../../environments/environment';
 import { DepartmentStatsResponse, OfficerPerformanceResponse } from '../../core/models/models';
 import { UserService } from '../../core/services/user.service';
-import { UserResponse } from '../../core/models/models';
+import { UserResponse, AuditLogResponse } from '../../core/models/models';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -43,6 +43,10 @@ import { forkJoin } from 'rxjs';
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           My Assigned Tasks
           <span *ngIf="myPendingCount>0" style="margin-left:auto;background:#b91c1c;color:white;font-size:0.58rem;font-weight:700;padding:1px 5px;border-radius:10px;">{{ myPendingCount }}</span>
+        </button>
+        <button class="nav-link" [class.is-active]="activeTab==='audit'" (click)="activeTab='audit'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Audit History
         </button>
         <div class="nav-group-label">Account</div>
         <a routerLink="/profile" class="nav-link">
@@ -81,27 +85,45 @@ import { forkJoin } from 'rxjs';
           <div *ngIf="stats" class="kpi-row" style="margin-bottom:16px;">
             <div class="kpi-card kpi-blue">
               <div class="kpi-num">{{ stats.totalComplaints }}</div>
-              <div class="kpi-label">Total</div>
+              <div class="kpi-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Total
+              </div>
             </div>
             <div class="kpi-card kpi-amber">
               <div class="kpi-num">{{ stats.pending }}</div>
-              <div class="kpi-label">Pending</div>
+              <div class="kpi-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Pending
+              </div>
             </div>
             <div class="kpi-card">
               <div class="kpi-num">{{ stats.inProgress }}</div>
-              <div class="kpi-label">In Progress</div>
+              <div class="kpi-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                In Progress
+              </div>
             </div>
             <div class="kpi-card kpi-green">
               <div class="kpi-num">{{ stats.resolved + stats.closed }}</div>
-              <div class="kpi-label">Resolved</div>
+              <div class="kpi-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                Resolved
+              </div>
             </div>
             <div class="kpi-card">
               <div class="kpi-num">{{ officerUsers.length }}</div>
-              <div class="kpi-label">Officers</div>
+              <div class="kpi-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Officers
+              </div>
             </div>
             <div class="kpi-card kpi-red" *ngIf="stats.slaBreached > 0">
               <div class="kpi-num">{{ stats.slaBreached }}</div>
-              <div class="kpi-label">SLA Breach</div>
+              <div class="kpi-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                SLA Breach
+              </div>
             </div>
           </div>
 
@@ -116,6 +138,12 @@ import { forkJoin } from 'rxjs';
             <button class="tab-item" [class.active]="activeTab==='mytasks'" (click)="activeTab='mytasks'">
               My Tasks
               <span class="tab-badge" [class.danger]="myPendingCount>0">{{ myTasks.length }}</span>
+            </button>
+            <button class="tab-item" [class.active]="activeTab==='reports'" (click)="activeTab='reports'">
+              Reports
+            </button>
+            <button class="tab-item" [class.active]="activeTab==='audit'" (click)="activeTab='audit'">
+              Audit Logs
             </button>
           </div>
 
@@ -274,6 +302,86 @@ import { forkJoin } from 'rxjs';
               <div class="table-footer"><span>{{ myTasks.length }} task(s)</span></div>
             </div>
           </ng-container>
+
+          <!-- ── Reports Tab ── -->
+          <ng-container *ngIf="activeTab==='reports'">
+            <div class="reports-container" *ngIf="stats">
+              <div class="report-grid">
+                <div class="report-card">
+                  <h4>Resolution Performance</h4>
+                  <div class="perf-metric">
+                    <div class="metric-val">{{ stats.resolutionRatePct }}%</div>
+                    <div class="metric-label">Efficiency Rate</div>
+                  </div>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar" [style.width.%]="stats.resolutionRatePct"></div>
+                  </div>
+                  <p class="metric-note">Target: 90% or higher</p>
+                </div>
+
+                <div class="report-card">
+                  <h4>SLA Compliance</h4>
+                  <div class="perf-metric">
+                    <div class="metric-val" [class.text-danger]="stats.slaCompliancePct < 85">{{ stats.slaCompliancePct }}%</div>
+                    <div class="metric-label">Compliance Rate</div>
+                  </div>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-bar" [style.width.%]="stats.slaCompliancePct" 
+                         [style.background]="stats.slaCompliancePct < 85 ? 'var(--danger)' : 'var(--success)'"></div>
+                  </div>
+                  <p class="metric-note">Complaints resolved within mandated timeline.</p>
+                </div>
+
+                <div class="report-card">
+                  <h4>Workload Summary</h4>
+                  <ul class="report-list">
+                    <li><span>Pending Approval</span> <strong>{{ stats.pending }}</strong></li>
+                    <li><span>In Progress</span> <strong>{{ stats.inProgress }}</strong></li>
+                    <li><span>SLA Breached</span> <strong class="text-danger">{{ stats.slaBreached }}</strong></li>
+                    <li><span>Total Resolved</span> <strong class="text-success">{{ stats.resolved + stats.closed }}</strong></li>
+                  </ul>
+                </div>
+
+                <div class="report-card">
+                  <h4>Department Overview</h4>
+                  <ul class="report-list">
+                    <li><span>Department</span> <strong>{{ stats.departmentName }}</strong></li>
+                    <li><span>Total Officers</span> <strong>{{ officerUsers.length }}</strong></li>
+                    <li><span>Head Name</span> <strong>{{ stats.headName || 'Not Set' }}</strong></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- ── Audit Tab ── -->
+          <ng-container *ngIf="activeTab==='audit'">
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let log of auditLogs">
+                    <td style="font-size:0.72rem;color:var(--text-500);white-space:nowrap;">{{ log.createdAt | date:'dd MMM, HH:mm' }}</td>
+                    <td style="font-size:0.78rem;font-weight:600;">{{ log.actorName }}</td>
+                    <td style="font-size:0.78rem;"><span class="badge badge-info">{{ log.action }}</span></td>
+                    <td style="font-size:0.78rem;max-width:300px;overflow:hidden;text-overflow:ellipsis;">{{ log.details }}</td>
+                    <td style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-400);">{{ log.entityType }}</td>
+                  </tr>
+                  <tr *ngIf="auditLogs.length===0">
+                    <td colspan="5" class="text-muted" style="text-align:center;padding:32px;">No audit history found for this department.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </ng-container>
         </ng-container>
       </div>
     </div>
@@ -368,6 +476,22 @@ import { forkJoin } from 'rxjs';
     .nav-signout { color:rgba(255,255,255,0.4);margin-top:8px; &:hover { color:#ef4444;background:rgba(239,68,68,0.1); } }
     .sidebar-nav { padding:0 8px 16px;flex:1; }
     .app-sidebar { width:220px;flex-shrink:0;background:#1e2a3b;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto; }
+
+    /* Reports Styles */
+    .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 10px 0; }
+    .report-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px;
+      h4 { font-size: 0.9rem; margin-bottom: 15px; color: var(--text-500); text-transform: uppercase; letter-spacing: 0.5px; } }
+    .perf-metric { margin-bottom: 15px;
+      .metric-val { font-size: 2.2rem; font-weight: 800; color: var(--primary); line-height: 1; }
+      .metric-label { font-size: 0.75rem; color: var(--text-500); margin-top: 5px; } }
+    .progress-bar-wrap { height: 8px; background: var(--bg-muted); border-radius: 4px; overflow: hidden; margin-bottom: 10px;
+      .progress-bar { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.6s ease; } }
+    .metric-note { font-size: 0.72rem; color: var(--text-400); font-style: italic; }
+    .report-list { list-style: none; padding: 0; margin: 0;
+      li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bg-muted); font-size: 0.82rem;
+        &:last-child { border-bottom: none; }
+        span { color: var(--text-500); }
+        strong { color: var(--text-900); } } }
   `]
 })
 export class SupervisorDashboardComponent implements OnInit {
@@ -383,6 +507,7 @@ export class SupervisorDashboardComponent implements OnInit {
   myTasks: ComplaintResponse[] = [];
   officers: OfficerPerformanceResponse[] = [];
   officerUsers: UserResponse[] = [];
+  auditLogs: AuditLogResponse[] = [];
 
   complaintSearch = '';
   filterStatus = '';
@@ -418,13 +543,15 @@ export class SupervisorDashboardComponent implements OnInit {
       officerUsers:this.supervisorService.getDepartmentOfficerUsers(),
       complaints:  this.supervisorService.getDepartmentComplaints(),
       myTasks:     this.complaintService.getMyTasks(),
+      auditLogs:   this.supervisorService.getDepartmentAuditLogs(50),
     }).subscribe({
-      next: ({ stats, officers, officerUsers, complaints, myTasks }) => {
+      next: ({ stats, officers, officerUsers, complaints, myTasks, auditLogs }) => {
         this.stats = stats;
         this.officers = officers;
         this.officerUsers = officerUsers;
         this.complaints = complaints;
         this.myTasks = myTasks;
+        this.auditLogs = auditLogs;
         for (const c of complaints) {
           this.assignSelection[c.id] = c.assignedOfficerId ?? null;
         }

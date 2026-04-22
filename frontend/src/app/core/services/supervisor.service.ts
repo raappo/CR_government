@@ -6,7 +6,8 @@ import {
   DepartmentStatsResponse,
   OfficerPerformanceResponse,
   ComplaintHistoryResponse,
-  UserResponse
+  UserResponse,
+  AuditLogResponse
 } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
@@ -41,6 +42,10 @@ export class SupervisorService {
 
   getComplaintHistory(complaintId: number): Observable<ComplaintHistoryResponse[]> {
     return this.http.get<ComplaintHistoryResponse[]>(`${this.base}/complaints/${complaintId}/history`);
+  }
+
+  getDepartmentAuditLogs(limit: number = 100): Observable<AuditLogResponse[]> {
+    return this.http.get<AuditLogResponse[]>(`${this.base}/department/audit-logs?limit=${limit}`);
   }
 
   getExportCsvUrl(): string {

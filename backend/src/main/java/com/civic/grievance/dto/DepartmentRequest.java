@@ -14,4 +14,7 @@ public class DepartmentRequest {
     private String description;
 
     private String contactEmail;
+
+    /** Optional — ID of the SUPERVISOR to assign as department head */
+    private Long supervisorId;
 }
